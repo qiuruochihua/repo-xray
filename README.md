@@ -1,28 +1,20 @@
 # repo-xray
 
-**X-ray an unfamiliar repository. Get an onboarding pack where every command
-was actually run, every cited path actually exists, and the coverage
-statement is true.**
+**接手一个陌生代码仓库时，先给它拍张 X 光。**
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Format: SKILL.md](https://img.shields.io/badge/Format-SKILL.md-blue.svg)
+你有没有过这种经历：打开一个没见过的项目，几百个文件摆在面前，不知道从哪儿看起——它到底是做什么的？怎么跑起来？想改一个小功能，该动哪个文件？哪里藏着不能碰的坑？
 
-An [Agent Skill](https://agentskills.io) for Claude Code and any agent that
-reads `SKILL.md`. Point it at a local path or a GitHub URL — a repo you
-inherited, a dependency you're evaluating, a project you want to contribute
-to — and it produces `REPO_XRAY.md` in the repo root:
+repo-xray 就是为这一刻准备的。你把仓库交给它，它会通读整个项目，产出一份《上手包》（`REPO_XRAY.md`），把上面这些问题一次答清：
 
-| Section | What you get |
-|---|---|
-| **1. Run it** | Install / run / test commands, each marked `VERIFIED` (executed in-session, with the observed result) or `UNVERIFIED` (with the reason). |
-| **2. Architecture** | One Mermaid diagram + one page: entry points, main flow, core modules and what each owns, data stores, external services. |
-| **3. Change index** | "To change X, touch Y, prove it with Z" — derived from the actual structure, only for intents this repo supports. |
-| **4. Landmines** | Outdated dependencies, untested critical paths, generated files masquerading as source, hidden conventions — each with evidence. |
-| **5. Reading path** | Exactly 5 files, in the order a newcomer should read them, one line each on why. |
+1. **怎么跑起来**——每条命令都实际运行验证过；跑不通的会标明原因，不糊弄。
+2. **结构长什么样**——一页架构图加一段白话说明，看懂各部分怎么配合。
+3. **想改东西动哪里**——「改 X → 动 Y → 用 Z 验证」的改动索引，照着做就行。
+4. **哪里有坑**——带出处证据的地雷清单，动手之前先避雷。
+5. **先看哪几个文件**——恰好 5 个文件的阅读路线，按依赖顺序排好，看完就懂个七八成。
 
-Plus a header with the one thing most summaries fake: **how much of the
-repo was actually read** — in full, sampled, or not opened, counted from
-the inventory, not from memory.
+它是一个给 Muse 用的 Skill（技能包），只读扫描你的仓库，只写出这一份报告，不动任何代码。
+
+*An X-ray for unfamiliar codebases: repo-xray reads a repo and produces a verified onboarding pack — how to run it, how it's structured, where to make changes, what to watch out for, and the 5 files to read first.*
 
 ## See a real one
 
@@ -57,16 +49,16 @@ Quick scans).
 ## How it works
 
 1. `scripts/inventory.py` (Python 3, stdlib only) counts the repo
-   deterministically: files, languages, LOC, manifests, entry-point
-   candidates, tests, CI, largest files, a depth-limited tree.
+deterministically: files, languages, LOC, manifests, entry-point
+candidates, tests, CI, largest files, a depth-limited tree.
 2. The agent verifies the run path (CI config is the most truthful source;
-   README is the least), reads from the entry points outward, and drafts
-   the pack from [`references/output-template.md`](references/output-template.md).
+README is the least), reads from the entry points outward, and drafts
+the pack from [`references/output-template.md`](references/output-template.md).
 3. `scripts/verify_report.py` mechanically enforces the honesty contract
-   before delivery: the five sections exist, **every backticked path in
-   the report exists on disk**, and every command block carries a
-   VERIFIED/UNVERIFIED marker. If the checker complains, the report gets
-   fixed — not the checker.
+before delivery: the five sections exist, **every backticked path in
+the report exists on disk**, and every command block carries a
+VERIFIED/UNVERIFIED marker. If the checker complains, the report gets
+fixed — not the checker.
 
 Safety: the scan is read-only (the report is the only file written), and
 SKILL.md treats running foreign install scripts as a risk decision, not a
